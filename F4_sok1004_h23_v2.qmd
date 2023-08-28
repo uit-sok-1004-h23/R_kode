@@ -1,0 +1,45 @@
+---
+title: "Vi lager en pdf"
+author: "Derek J. Clark"
+format: pdf
+editor: visual
+---
+
+## Introduksjon
+
+Dette dokumentet er laget i Quarto. Her kan man sy sammen kode med annet innhold i et ferdig dokument. Lær mer om Quarto på <https://quarto.org>.
+
+## Kjøre kode
+
+Koden kan kjøres interaktivt.
+
+```{r}
+
+rm(list=ls())
+library(tidyverse)
+```
+
+Følgende kode henter dataene vi brukte i Forelesning 3.
+
+```{r}
+
+link <- 
+  "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv"
+co2data <- read_csv(link)
+```
+
+Så lager jeg en figur.
+
+```{r}
+
+countries <- c("Norway", "China", "France", "United States", "Saudi Arabia")
+
+co2data %>% 
+  filter(country %in% countries, year >=1900) %>% 
+  ggplot(aes(x=year, y=co2_per_capita, color = country)) %>%
+  + geom_line() %>%
+  + theme_minimal() %>%
+  + xlab("År") %>%
+  + ylab("CO2 utslipp per person") %>%
+  +  ggtitle("CO2 utslipp per person per år, 1900 - 2020") 
+```

@@ -1,0 +1,49 @@
+---
+title: "Vi lager en litt penere pdf"
+subtitle: "Uten kode og advarsler"
+author: "Derek J. Clark"
+format: pdf
+editor: visual
+---
+
+## Introduksjon
+
+Dette dokumentet er laget i Quarto. Her kan man sy sammen kode med annet innhold i et ferdig dokument. Lær mer om Quarto på <https://quarto.org>.
+
+## Kjøre kode
+
+Koden kan kjøres interaktivt. **Vi kan spesifisere at koden ikke skal vises i pdf**
+
+```{r}
+#| include: false
+
+rm(list=ls())
+library(tidyverse)
+```
+
+**Vi ber nå om at output fra konsollen ikke vises i pdf.** Følgende kode henter dataene vi brukte i Forelesning 3.
+
+```{r}
+#| output: false
+
+link <- 
+  "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv"
+co2data <- read_csv(link)
+```
+
+Her har jeg valgt å ikke vise utskrift av konsollen i det ferdige dokumentet. Så lager jeg en figur. **Vi kan fjerne advarselen som vi fikk sist:**
+
+```{r}
+#| warning: false
+
+countries <- c("Norway", "China", "France", "United States", "Saudi Arabia")
+
+co2data %>% 
+  filter(country %in% countries, year >=1900) %>% 
+  ggplot(aes(x=year, y=co2_per_capita, color = country)) %>%
+  + geom_line() %>%
+  + theme_minimal() %>%
+  + xlab("År") %>%
+  + ylab("CO2 utslipp per person") %>%
+  +  ggtitle("CO2 utslipp per person per år, 1900 - 2020") 
+```
