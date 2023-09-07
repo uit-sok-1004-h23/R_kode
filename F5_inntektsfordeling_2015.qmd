@@ -55,3 +55,14 @@ df %>%
   
 
 ```
+
+# Oppgave - ulikhet i Tromsø kommune i 2015
+
+1.  Installer pakken `gglorenz` .
+2.  Lag et datasett fra `skatt_troms-2015` hvor du trekker ut verdier for Tromsø kommune (i 2015 hadde Tromsø kommunenummer 1902).
+3.  Bruk `gglorenz` til å tegne en Lorenz-kurve for Tromsø i 2015 basert på inntekt (før skatt), og beregne Gini-koeffisienten.
+4.  Lag en ny variabel for inntekt etter skatt.
+5.  Tegne en Lorenz-kurve for Tromsø i 2015 basert på inntekt etter skatt, og beregne Gini-koeffisienten.
+6.  Hvorfor funket dette ikke?
+7.  Rett opp feilen og tegn/beregn på nytt.
+8.  Hvilke konklusjoner kan du trekke fra din analyse?
