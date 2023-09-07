@@ -1,0 +1,57 @@
+---
+title: "SOK-1004, Forelsening 5 - Inntektsulikhet i Troms 2015"
+author: Derek J. Clark
+format:
+  html:
+    code-fold: true
+editor: visual
+---
+
+# Inntektsulikhet i Troms fylke, 2015
+
+Her skal vi se på skattetall for Troms fylke fra 2015.
+
+```{r}
+#| label: last inn data fra Troms
+
+rm(list=ls())
+
+suppressMessages(library(tidyverse))
+
+url <- "https://raw.githubusercontent.com/uit-sok-1004-h23/uit-sok-1004-h23.github.io/main/data/skatt_troms_2015.RDS"
+
+skatt_troms_2015 <- url %>%
+  url() %>%
+  gzcon() %>% 
+  readRDS()
+
+```
+
+Plott 100 persentiler for å vise inntektsfordelingen
+
+```{r}
+#| label: persentil plott fr skatt
+
+df <- skatt_troms_2015 %>%
+  select(inntekt) %>% 
+  quantile(probs = seq(0,1, .01), na.rm=TRUE)
+
+
+df <- as_tibble(df)
+
+df <- df %>% 
+  add_column(Persentil=c(0:100))
+
+df <- df %>% 
+  rename(inntekt_fr_skatt=value)
+
+
+df %>% 
+  ggplot(aes(x=Persentil,y=inntekt_fr_skatt/1000)) +
+  geom_col()+
+  labs (title = "Inntektsfordeling i Troms 2015 (før skatt)",
+        y = "Inntekt (1000kr)", x= "Persentil")+
+  theme_minimal()
+  
+
+```
