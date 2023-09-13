@@ -1,0 +1,155 @@
+---
+title: "SOK-1004, Forelsening 5 - Inntektsulikhet i Troms 2015"
+author: Derek J. Clark
+format:
+  html:
+    code-fold: true
+editor: visual
+---
+
+# Inntektsulikhet i Troms fylke, 2015
+
+Her skal vi se på skattetall for Troms fylke fra 2015.
+
+```{r}
+#| label: last inn data fra Troms
+
+rm(list=ls())
+
+suppressMessages(library(tidyverse))
+
+url <- "https://raw.githubusercontent.com/uit-sok-1004-h23/uit-sok-1004-h23.github.io/main/data/skatt_troms_2015.RDS"
+
+skatt_troms_2015 <- url %>%
+  url() %>%
+  gzcon() %>% 
+  readRDS()
+
+```
+
+Plott 100 persentiler for å vise inntektsfordelingen
+
+```{r}
+#| label: persentil plott fr skatt
+
+df <- skatt_troms_2015 %>%
+  select(inntekt) %>% 
+  quantile(probs = seq(0,1, .01), na.rm=TRUE)
+
+
+df <- as_tibble(df)
+
+df <- df %>% 
+  add_column(Persentil=c(0:100))
+
+df <- df %>% 
+  rename(inntekt_fr_skatt=value)
+
+
+df %>% 
+  ggplot(aes(x=Persentil,y=inntekt_fr_skatt/1000)) +
+  geom_col()+
+  labs (title = "Inntektsfordeling i Troms 2015 (før skatt)",
+        y = "Inntekt (1000kr)", x= "Persentil")+
+  theme_minimal()
+  
+
+```
+
+# Oppgave - ulikhet i Tromsø kommune i 2015
+
+1.  Installer pakken `gglorenz` .
+2.  Lag et datasett fra `skatt_troms-2015` hvor du trekker ut verdier for Tromsø kommune (i 2015 hadde Tromsø kommunenummer 1902).
+3.  Bruk `gglorenz` til å tegne en Lorenz-kurve for Tromsø i 2015 basert på inntekt (før skatt), og beregne Gini-koeffisienten.
+4.  Lag en ny variabel for inntekt etter skatt.
+5.  Tegn en Lorenz-kurve for Tromsø i 2015 basert på inntekt etter skatt, og beregn Gini-koeffisienten.
+6.  Hvorfor funket dette ikke?
+7.  Rett opp feilen og tegn/beregn på nytt.
+8.  Hvilke konklusjoner kan du trekke fra din analyse?
+
+# Løsning
+
+2\.
+
+```{r}
+tromso <- skatt_troms_2015 %>% 
+   filter(kommnr == "1902")
+```
+
+3\.
+
+```{r}
+library(gglorenz) # se https://cran.r-project.org/web/packages/gglorenz/gglorenz.pdf
+
+tromso %>% 
+  ggplot(aes(inntekt))+
+  stat_lorenz()+
+  annotate_ineq(tromso$inntekt)+
+  geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), linetype = "dashed") +
+  labs (
+    x="andel av befolkningen", 
+    y= "andel av inntekt", 
+    title = "Lorenz-kurve, Tromsø kommune 2015, inntekt før skatt"
+    ) +
+  theme_classic()
+```
+
+4\.
+
+```{r}
+tromso <- tromso %>% 
+  mutate(innt_etter_skatt = inntekt - skatt)
+```
+
+5.  og 6.
+
+    Man får følgende feilmelding
+
+    ```         
+    Warning message: Computation failed in `stat_lorenz()` Caused by error: ! stat_lorenz() requires a vector containing non-negative elements.
+    ```
+
+Ser man på kolonnen "innt_etter_skatt" finner du noen negative verdier. og `stat_lorenz()` krever elementer som er minst 0.
+
+7\.
+
+Vi kan rette opp ved å sette negative verdier til 0.
+
+```{r}
+tromso$innt_etter_skatt[tromso$innt_etter_skatt <0] <- 0
+```
+
+```{r}
+tromso %>% 
+  ggplot(aes(innt_etter_skatt))+
+  stat_lorenz()+
+  annotate_ineq(tromso$innt_etter_skatt)+
+  geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), linetype = "dashed") +
+  labs (
+    x="andel av befolkningen", 
+    y= "andel av inntekt", 
+    title = "Lorenz-kurve, Tromsø kommune 2015, inntekt etter skatt"
+    )+
+  theme_classic()
+```
+
+Plott på samme figur:
+
+```{r}
+tromso %>% 
+  ggplot() +
+  stat_lorenz(aes(inntekt, color = "Inntekt før skatt")) +
+  stat_lorenz(aes(innt_etter_skatt, color = "Inntekt etter skatt")) +
+  geom_segment(aes(x = 0, y = 0, xend = 1, yend = 1), linetype = "dashed") +
+  labs(
+    x="andel av befolkningen", 
+    y= "andel av inntekt", 
+    title = "Lorenz-kurve sammenlikning Tromsø, 2015",
+    subtitle = "Inntekt før og etter skatt"
+  ) +
+  scale_color_manual(name = " ", 
+                     values = c("Inntekt før skatt" = "blue", "Inntekt etter skatt" = "red")) +
+  theme_classic()
+
+
+```
